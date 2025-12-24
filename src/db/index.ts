@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
+import { MONGOURL } from "src/utils/variables";
 
-const databseUrl = process.env.MANGO_URI as string;
 //database connection
 mongoose
-  .connect(databseUrl)
+  .connect(MONGOURL)
   .then(() => {
     console.log("Connected to databse");
   })
