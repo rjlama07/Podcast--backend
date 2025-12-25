@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { RegisterController } from "#/controller/AuthController";
+import { RegisterController } from "#/controller/UserController";
 import { validate } from "#/middleware/validator";
 import { CreateUserSchema } from "#/utils/validation/validation";
 
