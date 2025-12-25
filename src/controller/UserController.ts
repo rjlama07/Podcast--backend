@@ -1,10 +1,12 @@
-import { CreateUserTypes } from "#/@types/user";
+import { CreateUserTypes, VerifyUserTypes } from "#/@types/user";
 import EmailVerificationToken from "#/models/EmailVerificationToken";
 import User from "#/models/User";
+import { generateEmailTemplate } from "#/utils/emailTemplate";
 import { generateOtp } from "#/utils/helper";
 import { CreateUserSchema } from "#/utils/validation/validation";
 import { MAILPASSWORD, MAILUSERNAME } from "#/utils/variables";
 import { RequestHandler } from "express";
+import { error } from "node:console";
 import nodemailer from "nodemailer";
 
 export const RegisterController: RequestHandler = async (
@@ -40,12 +42,52 @@ export const RegisterController: RequestHandler = async (
 
   transport.sendMail({
     to: email as string,
+    subject: "PODCAST OTP",
     from: "si@gmail.com",
-    html: `<h1>Your Token is ${otp}</h1>`,
+    html: generateEmailTemplate(otp),
   });
   res.status(200).json({
     message: "Success",
     user: user,
   });
+};
+
+export const verifyUserController: RequestHandler = async (
+  req: VerifyUserTypes,
+  res
+) => {
+  try {
+    const body = req.body;
+
+    const emailUser = await EmailVerificationToken.findOne({
+      owner: req.body.userId as String,
+    });
+    if (emailUser) {
+      const verify = await emailUser.compareToken(body.token as string);
+      if (!verify) {
+        return res.status(401).json({
+          error: "Invalid otp",
+        });
+      } else {
+        await User.findByIdAndUpdate(body.userId, {
+          verified: true,
+        });
+        await EmailVerificationToken.findOneAndDelete({
+          owner: body.userId as String,
+        });
+        return res.status(200).json({
+          message: "User verified sucessully",
+        });
+      }
+    } else {
+      return res.status(404).json({
+        error: "User with this id not fouund",
+      });
+    }
+  } catch (e) {
+    return res.status(500).json({
+      error: "500 Internal Server Error",
+    });
+  }
 };
 export const LoginController: RequestHandler = async (req, res) => {};

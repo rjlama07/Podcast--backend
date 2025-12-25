@@ -17,3 +17,8 @@ export const CreateUserSchema = yup.object().shape({
       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     ),
 });
+
+export const VerifyUserSchema = yup.object().shape({
+  token: yup.string().required("Token is missing"),
+  userId: yup.string().required("User id is missing"),
+});

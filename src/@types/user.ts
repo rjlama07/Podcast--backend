@@ -7,3 +7,10 @@ export interface CreateUserTypes extends Request {
     password: String;
   };
 }
+
+export interface VerifyUserTypes extends Request {
+  body: {
+    token: String;
+    userId: String;
+  };
+}

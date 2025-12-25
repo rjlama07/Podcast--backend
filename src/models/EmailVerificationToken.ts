@@ -1,4 +1,4 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { Model, ObjectId, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 
 interface EmailVerificationTokenDocument {
@@ -6,24 +6,30 @@ interface EmailVerificationTokenDocument {
   token: string;
   createdAt: Date;
 }
+interface Methods {
+  compareToken(token: string): Promise<boolean>;
+}
 
-const emailVerificaationTokenScheme =
-  new Schema<EmailVerificationTokenDocument>({
-    owner: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
-    token: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      expires: 3600,
-      default: Date.now,
-    },
-  });
+const emailVerificaationTokenScheme = new Schema<
+  EmailVerificationTokenDocument,
+  {},
+  Methods
+>({
+  owner: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  token: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    expires: 3600,
+    default: Date.now,
+  },
+});
 
 emailVerificaationTokenScheme.pre("save", async function () {
   if (this.isModified("token")) {
@@ -38,7 +44,7 @@ emailVerificaationTokenScheme.methods.compareToken = async function (
   return result;
 };
 
-export default model<EmailVerificationTokenDocument>(
+export default model(
   "EmailVerificationToken",
   emailVerificaationTokenScheme
-);
+) as Model<EmailVerificationTokenDocument, {}, Methods>;
